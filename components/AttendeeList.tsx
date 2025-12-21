@@ -1,0 +1,103 @@
+'use client';
+
+import { truncateAddress, formatTimestamp } from '@/lib/utils';
+import type { Attendee, Milestone } from '@/lib/types';
+
+interface AttendeeListProps {
+  attendees: Attendee[];
+  milestones: Milestone[];
+  completions: Map<string, Set<string>>; // milestoneId -> attendeeIds
+  hostWallet: string;
+}
+
+export default function AttendeeList({
+  attendees,
+  milestones,
+  completions,
+  hostWallet,
+}: AttendeeListProps) {
+  // Calculate progress for each attendee
+  const getProgress = (attendeeId: string): number => {
+    if (milestones.length === 0) return 0;
+    
+    let completedCount = 0;
+    milestones.forEach((milestone) => {
+      const attendeeIds = completions.get(milestone.id);
+      if (attendeeIds?.has(attendeeId)) {
+        completedCount++;
+      }
+    });
+    
+    return Math.round((completedCount / milestones.length) * 100);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold text-lg text-gray-900 dark:text-white">
+          Attendees ({attendees.length})
+        </h3>
+      </div>
+
+      {attendees.length === 0 ? (
+        <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+          <p>No attendees yet</p>
+          <p className="text-sm mt-1">Share the session code to invite participants</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {attendees.map((attendee) => {
+            const progress = getProgress(attendee.id);
+            const isHost = attendee.wallet_address.toLowerCase() === hostWallet.toLowerCase();
+
+            return (
+              <div
+                key={attendee.id}
+                className="p-3 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors bg-white dark:bg-gray-800"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium truncate text-gray-900 dark:text-white">
+                        {attendee.display_name || truncateAddress(attendee.wallet_address)}
+                      </p>
+                      {isHost && (
+                        <span className="px-2 py-0.5 text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full">
+                          Host
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">
+                      {truncateAddress(attendee.wallet_address)}
+                    </p>
+                    {attendee.email && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                        {attendee.email}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="text-right">
+                    {milestones.length > 0 && (
+                      <>
+                        <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {progress}%
+                        </div>
+                        <div className="w-16 h-2 bg-gray-200 dark:bg-gray-700 rounded-full mt-1 overflow-hidden">
+                          <div
+                            className="h-full bg-green-600 dark:bg-green-500 transition-all duration-300"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}

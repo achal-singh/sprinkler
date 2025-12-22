@@ -8,6 +8,7 @@ import MilestoneList from '@/components/MilestoneList';
 import AttendeeList from '@/components/AttendeeList';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
 import type { Workshop, Attendee, Milestone, ChatMessage } from '@/lib/types';
+import { generateId } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 
 export default function WorkshopSessionPage() {
@@ -32,6 +33,7 @@ export default function WorkshopSessionPage() {
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [joinUrl, setJoinUrl] = useState('');
   const [showTerminateConfirm, setShowTerminateConfirm] = useState(false);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
 
   // Fetch initial data
   useEffect(() => {
@@ -43,12 +45,21 @@ export default function WorkshopSessionPage() {
     if (!workshop) return;
 
     const attendeesChannel = supabase
-      .channel(`workshop-${workshop.id}-attendees`)
+      .channel(`workshop-${workshop.id}-attendees`, {
+        config: {
+          broadcast: { self: true },
+        },
+      })
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'attendees', filter: `workshop_id=eq.${workshop.id}` },
-        () => fetchAttendees()
+        (payload) => {
+          // Refetch with the current workshop ID
+          fetchAttendees(workshop.id);
+        }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.info('Attendees channel status:', status);
+      });
 
     const milestonesChannel = supabase
       .channel(`workshop-${workshop.id}-milestones`)
@@ -141,12 +152,16 @@ export default function WorkshopSessionPage() {
     const id = workshopId || workshop?.id;
     if (!id) return;
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('attendees')
       .select('*')
       .eq('workshop_id', id)
       .order('joined_at', { ascending: true });
 
+    if (error) {
+      console.error('Error fetching attendees:', error);
+      return;
+    }
     if (data) setAttendees(data);
   };
 
@@ -249,6 +264,42 @@ export default function WorkshopSessionPage() {
     await fetchCompletions();
   };
 
+  const handleLeaveWorkshop = async () => {
+    if (!currentUser || !workshop) return;
+
+    try {
+      // Send a leave message first (optional but helpful)
+      await supabase.from('chat_messages').insert({
+        id: generateId(),
+        workshop_id: workshop.id,
+        sender_wallet: 'system',
+        sender_name: 'System',
+        message: `${currentUser.display_name || currentUser.wallet_address.slice(0, 6)} left the workshop`,
+        message_type: 'system',
+      });
+
+      // Delete the attendee record from the database
+      const { error } = await supabase
+        .from('attendees')
+        .delete()
+        .eq('id', currentUser.id);
+
+      if (error) {
+        console.error('Error deleting attendee:', error);
+      }
+
+      // Small delay to ensure the deletion is processed
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      // Redirect to home
+      router.push('/');
+    } catch (error) {
+      console.error('Error leaving workshop:', error);
+      // Redirect anyway even if delete fails
+      router.push('/');
+    }
+  };
+
   const handleTerminateWorkshop = async () => {
     if (!workshop) return;
 
@@ -310,24 +361,51 @@ export default function WorkshopSessionPage() {
               )}
             </div>
             <div className="flex gap-2">
-              {isHost && (
+              {isHost ? (
                 <button
                   onClick={() => setShowTerminateConfirm(true)}
                   className="px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700"
                 >
                   End Workshop
                 </button>
+              ) : (
+                <button
+                  onClick={() => setShowLeaveConfirm(true)}
+                  className="px-4 py-2 text-sm bg-orange-600 text-white rounded hover:bg-orange-700"
+                >
+                  Leave Workshop
+                </button>
               )}
-              <Link
-                href="/"
-                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 dark:hover:text-gray-300"
-              >
-                ← Exit
-              </Link>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Leave Confirmation Modal (for attendees) */}
+      {showLeaveConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md mx-4">
+            <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Leave Workshop?</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              You will be removed from this workshop. Your chat messages and milestone completions will remain in the history.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowLeaveConfirm(false)}
+                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLeaveWorkshop}
+                className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700"
+              >
+                Yes, Leave Workshop
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Terminate Confirmation Modal */}
       {showTerminateConfirm && (

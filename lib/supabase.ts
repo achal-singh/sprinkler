@@ -7,12 +7,15 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables')
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  realtime: {
+    params: {
+      eventsPerSecond: 10
+    }
+  }
+})
 
 // Helper function for server-side operations (if needed)
 export const getServerSupabase = () => {
-  if (supabaseAnonKey) {
-    return createClient(supabaseUrl, supabaseAnonKey)
-  }
-  return supabase
+  return createClient(supabaseUrl, supabaseAnonKey)
 }

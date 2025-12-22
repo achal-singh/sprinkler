@@ -111,3 +111,6 @@ ALTER PUBLICATION supabase_realtime ADD TABLE chat_messages;
 ALTER PUBLICATION supabase_realtime ADD TABLE attendees;
 ALTER PUBLICATION supabase_realtime ADD TABLE milestones;
 ALTER PUBLICATION supabase_realtime ADD TABLE milestone_completions;
+
+-- To include full row data for UPDATE/DELETE operations
+ALTER TABLE attendees REPLICA IDENTITY FULL;

@@ -33,36 +33,41 @@ export async function POST(request: NextRequest) {
     // Delete all related data
     // Order matters due to foreign key constraints
 
-    // 1. Delete milestone completions
-    await supabase
-      .from('milestone_completions')
-      .delete()
-      .in('milestone_id', 
-        supabase
-          .from('milestones')
-          .select('id')
-          .eq('workshop_id', workshopId)
-      );
+    // 1. Get all milestone IDs for this workshop
+    const { data: milestones } = await supabase
+      .from('milestones')
+      .select('id')
+      .eq('workshop_id', workshopId);
 
-    // 2. Delete milestones
+    const milestoneIds = milestones?.map(m => m.id) || [];
+
+    // 2. Delete milestone completions using the milestone IDs
+    if (milestoneIds.length > 0) {
+      await supabase
+        .from('milestone_completions')
+        .delete()
+        .in('milestone_id', milestoneIds);
+    }
+
+    // 3. Delete milestones
     await supabase
       .from('milestones')
       .delete()
       .eq('workshop_id', workshopId);
 
-    // 3. Delete chat messages
+    // 4. Delete chat messages
     await supabase
       .from('chat_messages')
       .delete()
       .eq('workshop_id', workshopId);
 
-    // 4. Delete attendees
+    // 5. Delete attendees
     await supabase
       .from('attendees')
       .delete()
       .eq('workshop_id', workshopId);
 
-    // 5. Update workshop status to completed
+    // 6. Update workshop status to completed
     await supabase
       .from('workshops')
       .update({ status: 'completed', updated_at: new Date().toISOString() })

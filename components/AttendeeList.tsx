@@ -7,14 +7,12 @@ interface AttendeeListProps {
   attendees: Attendee[];
   milestones: Milestone[];
   completions: Map<string, Set<string>>; // milestoneId -> attendeeIds
-  hostWallet: string;
 }
 
 export default function AttendeeList({
   attendees,
   milestones,
   completions,
-  hostWallet,
 }: AttendeeListProps) {
   // Calculate progress for each attendee
   const getProgress = (attendeeId: string): number => {
@@ -48,7 +46,6 @@ export default function AttendeeList({
         <div className="space-y-2">
           {attendees.map((attendee) => {
             const progress = getProgress(attendee.id);
-            const isHost = attendee.wallet_address.toLowerCase() === hostWallet.toLowerCase();
 
             return (
               <div
@@ -61,11 +58,6 @@ export default function AttendeeList({
                       <p className="font-medium truncate text-gray-900 dark:text-white">
                         {attendee.display_name || truncateAddress(attendee.wallet_address)}
                       </p>
-                      {isHost && (
-                        <span className="px-2 py-0.5 text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full">
-                          Host
-                        </span>
-                      )}
                     </div>
                     <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">
                       {truncateAddress(attendee.wallet_address)}

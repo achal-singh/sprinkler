@@ -32,19 +32,6 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Get milestone and attendee info for the message
-    const { data: milestone } = await supabase
-      .from('milestones')
-      .select('title, workshop_id')
-      .eq('id', milestoneId)
-      .single();
-
-    const { data: attendee } = await supabase
-      .from('attendees')
-      .select('display_name, wallet_address')
-      .eq('id', attendeeId)
-      .single();
-
     // Create completion
     const { data: completion, error } = await supabase
       .from('milestone_completions')
@@ -63,19 +50,6 @@ export async function POST(request: NextRequest) {
         { error: 'Failed to mark milestone as complete' },
         { status: 500 }
       );
-    }
-
-    // Send system message
-    if (milestone && attendee) {
-      const displayName = attendee.display_name || attendee.wallet_address.slice(0, 6);
-      await supabase.from('chat_messages').insert({
-        id: generateId(),
-        workshop_id: milestone.workshop_id,
-        sender_wallet: 'system',
-        sender_name: 'System',
-        message: `${displayName} completed: ${milestone.title}`,
-        message_type: 'milestone_completed',
-      });
     }
 
     return NextResponse.json({

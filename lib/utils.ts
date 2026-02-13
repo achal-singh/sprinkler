@@ -1,4 +1,13 @@
 import { nanoid } from 'nanoid';
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+/**
+ * Combine Tailwind CSS classes with proper precedence
+ */
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 /**
  * Generate a short, user-friendly session code

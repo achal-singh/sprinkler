@@ -7,6 +7,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables')
 }
 
+// Singleton client instance - created once and reused
+// Safe for both client and server-side usage with anon key
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   realtime: {
     params: {
@@ -15,7 +17,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 })
 
-// Helper function for server-side operations (if needed)
-export const getServerSupabase = () => {
-  return createClient(supabaseUrl, supabaseAnonKey)
-}
+// Alias for semantic clarity in server contexts
+// Returns the same singleton instance
+export const getServerSupabase = () => supabase

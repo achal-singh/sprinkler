@@ -70,34 +70,49 @@ export default function WorkshopSessionPage() {
         }
       : null
 
-  // Intercept browser back button for attendees
+  // Flag used by handleLeaveWorkshop to bypass beforeunload
+  const isLeavingIntentionally = useRef(false)
+
+  // Warn attendees when closing/refreshing the tab
   useEffect(() => {
-    if (!isHost && currentUser) {
-      const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-        // This won't show our custom dialog but will show browser's default confirmation
-        e.preventDefault()
-        e.returnValue = ''
-      }
+    if (isHost || !currentUser) return
 
-      const handlePopState = (e: PopStateEvent) => {
-        e.preventDefault()
-        setShowLeaveConfirm(true)
-        // Push the current state back to prevent actual navigation
-        window.history.pushState(null, '', window.location.pathname + window.location.search)
-      }
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isLeavingIntentionally.current) return
+      e.preventDefault()
+      e.returnValue = ''
+    }
 
-      // Push a dummy state to enable popstate detection
-      window.history.pushState(null, '', window.location.pathname + window.location.search)
-      
-      window.addEventListener('popstate', handlePopState)
-      window.addEventListener('beforeunload', handleBeforeUnload)
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [isHost, currentUser])
 
-      return () => {
-        window.removeEventListener('popstate', handlePopState)
-        window.removeEventListener('beforeunload', handleBeforeUnload)
+  // Intercept browser back for attendees and show the leave confirmation dialog.
+  useEffect(() => {
+    if (isHost || !attendeeId || isLeavingIntentionally.current) return
+
+    const ensureBackGuardState = () => {
+      const currentState = window.history.state || {}
+      if (!currentState.sprinklerLeaveGuard) {
+        window.history.pushState(
+          { ...currentState, sprinklerLeaveGuard: true },
+          '',
+          window.location.href
+        )
       }
     }
-  }, [isHost, currentUser])
+
+    ensureBackGuardState()
+
+    const handlePopState = () => {
+      if (isLeavingIntentionally.current) return
+      setShowLeaveConfirm(true)
+      ensureBackGuardState()
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [isHost, attendeeId])
 
   const fetchAttendees = async (workshopId?: string) => {
     const id = workshopId || workshop?.id
@@ -428,9 +443,12 @@ export default function WorkshopSessionPage() {
 
       await new Promise(resolve => setTimeout(resolve, 300))
 
+      // Disable navigation guards before redirecting
+      isLeavingIntentionally.current = true
       router.push('/')
     } catch (error) {
       console.error('Error leaving workshop:', error)
+      isLeavingIntentionally.current = true
       router.push('/')
     }
   }

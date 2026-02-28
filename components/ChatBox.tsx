@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { formatTimestamp, truncateAddress } from '@/lib/utils';
 import type { ChatMessage } from '@/lib/types';
+import { Spinner } from '@/components/ui/spinner';
 
 interface ChatBoxProps {
   workshopId: string;
@@ -115,9 +116,9 @@ export default function ChatBox({
           <button
             type="submit"
             disabled={!message.trim() || isSending}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors inline-flex items-center justify-center gap-2 min-w-[80px]"
           >
-            {isSending ? '...' : 'Send'}
+            {isSending ? <Spinner size="sm" /> : 'Send'}
           </button>
         </div>
       </form>

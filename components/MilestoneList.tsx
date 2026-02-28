@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import type { Milestone, Attendee } from '@/lib/types';
+import { LoadingButton } from '@/components/ui/loading-button';
+import { Spinner } from '@/components/ui/spinner';
 
 interface MilestoneListProps {
   milestones: Milestone[];
@@ -23,6 +25,7 @@ export default function MilestoneList({
   const [isCreating, setIsCreating] = useState(false);
   const [newMilestone, setNewMilestone] = useState({ title: '', description: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [completingId, setCompletingId] = useState<string | null>(null);
 
   const handleCreateMilestone = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,10 +46,13 @@ export default function MilestoneList({
   const handleComplete = async (milestoneId: string) => {
     if (!onCompleteMilestone) return;
     
+    setCompletingId(milestoneId);
     try {
       await onCompleteMilestone(milestoneId);
     } catch (error) {
       console.error('Failed to complete milestone:', error);
+    } finally {
+      setCompletingId(null);
     }
   };
 
@@ -92,13 +98,14 @@ export default function MilestoneList({
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
             rows={2}
           />
-          <button
+          <LoadingButton
             type="submit"
-            disabled={isSubmitting}
-            className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
+            isLoading={isSubmitting}
+            loadingText="Creating..."
+            className="w-full py-2"
           >
-            {isSubmitting ? 'Creating...' : 'Create Milestone'}
-          </button>
+            Create Milestone
+          </LoadingButton>
         </form>
       )}
 
@@ -115,6 +122,7 @@ export default function MilestoneList({
           {milestones.map((milestone, index) => {
             const completed = isCompleted(milestone.id);
             const completionCount = getCompletionCount(milestone.id);
+            const isCompletingThis = completingId === milestone.id;
 
             return (
               <div
@@ -149,9 +157,11 @@ export default function MilestoneList({
                   {!isHost && !completed && onCompleteMilestone && (
                     <button
                       onClick={() => handleComplete(milestone.id)}
-                      className="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors whitespace-nowrap"
+                      disabled={isCompletingThis}
+                      className="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors whitespace-nowrap inline-flex items-center gap-2"
                     >
-                      Mark Complete
+                      {isCompletingThis && <Spinner size="sm" />}
+                      {isCompletingThis ? 'Completing...' : 'Mark Complete'}
                     </button>
                   )}
                 </div>

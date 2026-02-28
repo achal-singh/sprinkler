@@ -6,6 +6,8 @@ import { useAccount } from 'wagmi';
 import { useEffect } from 'react';
 import Link from 'next/link';
 import WalletConnectButton from '@/components/WalletConnectButton';
+import { LoadingButton } from '@/components/ui/loading-button';
+import { LoadingBar } from '@/components/ui/loading-bar';
 
 export default function JoinWorkshopPage() {
   const router = useRouter();
@@ -110,7 +112,8 @@ export default function JoinWorkshopPage() {
         </div>
 
         {isConnected && address && (
-          <form onSubmit={handleSubmit} className="space-y-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <form onSubmit={handleSubmit} className="relative space-y-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <LoadingBar isLoading={isLoading} />
             <div>
               <label htmlFor="sessionCode" className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">
                 Session Code *
@@ -221,13 +224,14 @@ export default function JoinWorkshopPage() {
               </div>
             )}
 
-            <button
+            <LoadingButton
               type="submit"
-              disabled={isLoading}
-              className="w-full bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              isLoading={isLoading}
+              loadingText="Joining Workshop..."
+              className="w-full py-3 bg-green-600 hover:bg-green-700"
             >
-              {isLoading ? 'Joining Workshop...' : 'Join Workshop'}
-            </button>
+              Join Workshop
+            </LoadingButton>
           </form>
         )}
 

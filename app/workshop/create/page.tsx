@@ -6,6 +6,8 @@ import { useAccount } from 'wagmi';
 import Link from 'next/link';
 import type { CreateWorkshopResponse } from '@/lib/types';
 import WalletConnectButton from '@/components/WalletConnectButton';
+import { LoadingButton } from '@/components/ui/loading-button';
+import { LoadingBar } from '@/components/ui/loading-bar';
 
 export default function CreateWorkshopPage() {
   const router = useRouter();
@@ -73,7 +75,8 @@ export default function CreateWorkshopPage() {
         </div>
 
         {isConnected && address && (
-          <form onSubmit={handleSubmit} className="space-y-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <form onSubmit={handleSubmit} className="relative space-y-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <LoadingBar isLoading={isLoading} />
             <div>
               <label htmlFor="title" className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">
                 Workshop Title *
@@ -115,13 +118,14 @@ export default function CreateWorkshopPage() {
               </div>
             )}
 
-            <button
+            <LoadingButton
               type="submit"
-              disabled={isLoading}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              isLoading={isLoading}
+              loadingText="Creating Workshop..."
+              className="w-full py-3"
             >
-              {isLoading ? 'Creating Workshop...' : 'Create Workshop'}
-            </button>
+              Create Workshop
+            </LoadingButton>
           </form>
         )}
 

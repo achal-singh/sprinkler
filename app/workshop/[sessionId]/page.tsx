@@ -31,6 +31,7 @@ import type { Workshop, Attendee, Milestone, ChatMessage } from '@/lib/types'
 import { generateId, truncateAddress } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
 import { ChevronDown, LogOut, ArrowLeft } from 'lucide-react'
+import { Spinner } from '@/components/ui/spinner'
 
 export default function WorkshopSessionPage() {
   const params = useParams()
@@ -59,6 +60,8 @@ export default function WorkshopSessionPage() {
   const [joinUrl, setJoinUrl] = useState('')
   const [showTerminateConfirm, setShowTerminateConfirm] = useState(false)
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
+  const [isTerminating, setIsTerminating] = useState(false)
+  const [isLeaving, setIsLeaving] = useState(false)
   const chatSender = isHost
     ? workshop
       ? { wallet: workshop.host_wallet, name: 'Host' as string | undefined }
@@ -420,6 +423,7 @@ export default function WorkshopSessionPage() {
   const handleLeaveWorkshop = async () => {
     if (!currentUser || !workshop) return
 
+    setIsLeaving(true)
     try {
       await supabase.from('chat_messages').insert({
         id: generateId(),
@@ -456,6 +460,7 @@ export default function WorkshopSessionPage() {
   const handleTerminateWorkshop = async () => {
     if (!workshop) return
 
+    setIsTerminating(true)
     try {
       const response = await fetch('/api/workshop/terminate', {
         method: 'POST',
@@ -470,6 +475,7 @@ export default function WorkshopSessionPage() {
 
       router.push('/')
     } catch (err) {
+      setIsTerminating(false)
       alert('Failed to terminate workshop')
     }
   }
@@ -543,8 +549,11 @@ export default function WorkshopSessionPage() {
                   variant="destructive"
                   size="sm"
                   onClick={() => setShowTerminateConfirm(true)}
+                  disabled={isTerminating}
+                  className="inline-flex items-center gap-2"
                 >
-                  End Workshop
+                  {isTerminating && <Spinner size="sm" />}
+                  {isTerminating ? 'Ending...' : 'End Workshop'}
                 </Button>
               ) : (
                 <DropdownMenu>
@@ -595,9 +604,11 @@ export default function WorkshopSessionPage() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleLeaveWorkshop}
-              className="bg-orange-600 hover:bg-orange-700"
+              disabled={isLeaving}
+              className="bg-orange-600 hover:bg-orange-700 inline-flex items-center gap-2"
             >
-              Yes, Leave Workshop
+              {isLeaving && <Spinner size="sm" />}
+              {isLeaving ? 'Leaving...' : 'Yes, Leave Workshop'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -621,9 +632,11 @@ export default function WorkshopSessionPage() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleTerminateWorkshop}
-              className="bg-red-600 hover:bg-red-700"
+              disabled={isTerminating}
+              className="bg-red-600 hover:bg-red-700 inline-flex items-center gap-2"
             >
-              Yes, End Workshop
+              {isTerminating && <Spinner size="sm" />}
+              {isTerminating ? 'Ending...' : 'Yes, End Workshop'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -10,15 +10,14 @@ import { supabase } from '@/lib/supabase'
 import { truncateAddress } from '@/lib/utils'
 import type { Workshop, Attendee, Milestone } from '@/lib/types'
 import type { PaymentToken, PaymentRecipient } from '@/lib/contracts/batchTransfer'
-import { BATCH_TRANSFER_ADDRESS } from '@/lib/contracts/batchTransfer'
-import { useBatchTransfer, useDelegationStatus, type TransferStep } from '@/lib/hooks/useBatchTransfer'
+import { useBatchTransfer, type TransferStep } from '@/lib/hooks/useBatchTransfer'
 
 import { Button } from '@/components/ui/button'
 import { LoadingButton } from '@/components/ui/loading-button'
 import { LoadingBar } from '@/components/ui/loading-bar'
 import { Spinner } from '@/components/ui/spinner'
 import WalletConnectButton from '@/components/WalletConnectButton'
-import { ArrowLeft, CheckCircle2, ExternalLink, Wallet, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, ExternalLink, Wallet } from 'lucide-react'
 
 // ---------------------------------------------------------------------------
 // Step indicator labels for the transaction flow
@@ -26,8 +25,6 @@ import { ArrowLeft, CheckCircle2, ExternalLink, Wallet, AlertTriangle } from 'lu
 
 const STEP_LABELS: Record<TransferStep, string> = {
   idle: '',
-  'checking-delegation': 'Checking delegation status...',
-  'signing-authorization': 'Sign the EIP-7702 authorization in your wallet...',
   'sending-transaction': 'Confirm the batch transfer in your wallet...',
   confirming: 'Waiting for on-chain confirmation...',
   success: 'Transfer complete!',
@@ -67,10 +64,7 @@ export default function PaymentPage() {
   // ---- Recipients ----
   const [recipients, setRecipients] = useState<PaymentRecipient[]>([])
   const [uniformAmount, setUniformAmount] = useState('')
-  const [milestoneFilter, setMilestoneFilter] = useState<string>('all') // 'all' or milestoneId
-
-  // ---- Delegation ----
-  const { status: delegationStatus, isChecking: isDelegationChecking, check: checkDelegation } = useDelegationStatus()
+  const [milestoneFilter, setMilestoneFilter] = useState<string>('all')
 
   // ---- Batch transfer ----
   const { step, txHash, error: txError, execute, reset: resetTx } = useBatchTransfer()
@@ -157,15 +151,7 @@ export default function PaymentPage() {
         selected: true,
       }))
     )
-  }, [attendees]) // intentionally excluding uniformAmount — handled separately
-
-  // -----------------------------------------------------------------------
-  // Check delegation on mount
-  // -----------------------------------------------------------------------
-
-  useEffect(() => {
-    if (isConnected) checkDelegation()
-  }, [isConnected, checkDelegation])
+  }, [attendees])
 
   // -----------------------------------------------------------------------
   // ERC-20 token detection
@@ -235,29 +221,17 @@ export default function PaymentPage() {
     setRecipients(prev => prev.map(r => ({ ...r, amount: uniformAmount })))
   }, [uniformAmount])
 
-  // -----------------------------------------------------------------------
-  // Toggle individual recipient
-  // -----------------------------------------------------------------------
-
   const toggleRecipient = useCallback((attendeeId: string) => {
     setRecipients(prev =>
       prev.map(r => (r.attendeeId === attendeeId ? { ...r, selected: !r.selected } : r))
     )
   }, [])
 
-  // -----------------------------------------------------------------------
-  // Update individual amount
-  // -----------------------------------------------------------------------
-
   const updateRecipientAmount = useCallback((attendeeId: string, amount: string) => {
     setRecipients(prev =>
       prev.map(r => (r.attendeeId === attendeeId ? { ...r, amount } : r))
     )
   }, [])
-
-  // -----------------------------------------------------------------------
-  // Select / deselect all
-  // -----------------------------------------------------------------------
 
   const selectAll = useCallback((selected: boolean) => {
     setRecipients(prev => prev.map(r => ({ ...r, selected })))
@@ -306,7 +280,7 @@ export default function PaymentPage() {
   // Render helpers
   // -----------------------------------------------------------------------
 
-  const isTransacting = ['checking-delegation', 'signing-authorization', 'sending-transaction', 'confirming'].includes(step)
+  const isTransacting = ['sending-transaction', 'confirming'].includes(step)
   const canSend = activeRecipients.length > 0 && totalAmount > 0n && !isTransacting
 
   // -----------------------------------------------------------------------
@@ -373,27 +347,6 @@ export default function PaymentPage() {
       </div>
 
       <div className="max-w-5xl mx-auto p-4 space-y-6">
-        {/* Delegation status banner */}
-        {delegationStatus && delegationStatus.kind !== 'delegated-batch-transfer' && (
-          <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-800 rounded-lg text-sm text-yellow-800 dark:text-yellow-200 flex items-start gap-2">
-            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
-            <div>
-              <p className="font-medium">Delegation required</p>
-              <p className="mt-1 text-yellow-700 dark:text-yellow-300">
-                Your wallet is not yet delegated to the BatchTransfer contract. The first transfer will include an EIP-7702
-                authorization signature. Subsequent transfers will execute directly.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {delegationStatus?.kind === 'delegated-batch-transfer' && (
-          <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-800 rounded-lg text-sm text-green-800 dark:text-green-200 flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 shrink-0" />
-            Wallet already delegated to BatchTransfer — no extra authorization step needed.
-          </div>
-        )}
-
         {/* ============================================================= */}
         {/*  Panel 1: Token Selection                                      */}
         {/* ============================================================= */}

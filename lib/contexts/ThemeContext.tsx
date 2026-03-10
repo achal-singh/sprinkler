@@ -35,6 +35,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.classList.toggle('dark', newTheme === 'dark');
   };
 
+  // Avoid rendering children until the client has read the saved theme
+  // from localStorage. This prevents a hydration mismatch where the
+  // server renders with the default theme ('light') but the client
+  // immediately applies 'dark' from localStorage.
+  if (!mounted) {
+    return (
+      <ThemeContext.Provider value={{ theme, toggleTheme }}>
+        <div style={{ visibility: 'hidden' }}>{children}</div>
+      </ThemeContext.Provider>
+    );
+  }
+
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
       {children}

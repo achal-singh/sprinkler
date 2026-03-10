@@ -1,56 +1,18 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import { useAccount, usePublicClient, useWalletClient } from 'wagmi'
-import { type Address, type Hex, encodeFunctionData } from 'viem'
-import {
-  BATCH_TRANSFER_ADDRESS,
-  batchTransferABI,
-  checkDelegationStatus,
-  type DelegationStatus,
-  type PaymentToken
-} from '@/lib/contracts/batchTransfer'
+import { useAccount } from 'wagmi'
+import { type Address, erc20Abi, parseUnits } from 'viem'
+import { sendCalls, getCallsStatus } from '@wagmi/core'
+import { config } from '@/lib/wagmi'
+import type { PaymentToken } from '@/lib/contracts/batchTransfer'
 
 // ---------------------------------------------------------------------------
-// useDelegationStatus — check if the connected EOA is already delegated
-// ---------------------------------------------------------------------------
-
-export function useDelegationStatus() {
-  const { address } = useAccount()
-  const publicClient = usePublicClient()
-
-  const [status, setStatus] = useState<DelegationStatus | null>(null)
-  const [isChecking, setIsChecking] = useState(false)
-
-  const check = useCallback(async () => {
-    if (!address || !publicClient) return null
-
-    setIsChecking(true)
-    try {
-      const code = await publicClient.getCode({ address })
-      const result = checkDelegationStatus((code ?? '0x') as Hex)
-      setStatus(result)
-      return result
-    } catch (err) {
-      console.error('Failed to check delegation status:', err)
-      setStatus({ kind: 'none' })
-      return { kind: 'none' } as DelegationStatus
-    } finally {
-      setIsChecking(false)
-    }
-  }, [address, publicClient])
-
-  return { status, isChecking, check }
-}
-
-// ---------------------------------------------------------------------------
-// useBatchTransfer — the main hook for executing batch payments
+// useBatchTransfer — batch payments via wallet_sendCalls (EIP-5792)
 // ---------------------------------------------------------------------------
 
 export type TransferStep =
   | 'idle'
-  | 'checking-delegation'
-  | 'signing-authorization'
   | 'sending-transaction'
   | 'confirming'
   | 'success'
@@ -61,10 +23,13 @@ export interface BatchTransferResult {
   error: string | null
 }
 
+/** Poll interval (ms) when waiting for call bundle confirmation */
+const POLL_INTERVAL = 2_000
+/** Max time (ms) to wait before giving up on confirmation */
+const POLL_TIMEOUT = 120_000
+
 export function useBatchTransfer() {
   const { address } = useAccount()
-  const publicClient = usePublicClient()
-  const { data: walletClient } = useWalletClient()
 
   const [step, setStep] = useState<TransferStep>('idle')
   const [txHash, setTxHash] = useState<string | null>(null)
@@ -82,15 +47,8 @@ export function useBatchTransfer() {
       recipients: Address[],
       amounts: bigint[]
     ): Promise<BatchTransferResult> => {
-      if (!address || !walletClient || !publicClient) {
+      if (!address) {
         const msg = 'Wallet not connected'
-        setError(msg)
-        setStep('error')
-        return { txHash: null, error: msg }
-      }
-
-      if (!BATCH_TRANSFER_ADDRESS) {
-        const msg = 'BatchTransfer contract address not configured'
         setError(msg)
         setStep('error')
         return { txHash: null, error: msg }
@@ -100,114 +58,81 @@ export function useBatchTransfer() {
         setError(null)
         setTxHash(null)
 
-        // 1. Check current delegation status
-        setStep('checking-delegation')
-        const code = await publicClient.getCode({ address })
-        const delegation = checkDelegationStatus((code ?? '0x') as Hex)
-
-        const needsAuthorization =
-          delegation.kind !== 'delegated-batch-transfer'
-
-        let authorizationList: any[] | undefined
-
-        if (needsAuthorization) {
-          // 2. Prepare/sign EIP-7702 authorization.
-          // viem `signAuthorization` does not support json-rpc accounts
-          // (e.g. MetaMask injected wallets), so for those we pass an
-          // unsigned authorization in the tx and let the wallet handle it.
-          if (walletClient.account?.type === 'json-rpc') {
-            const authorization = await walletClient.prepareAuthorization({
-              account: address,
-              executor: 'self',
-              contractAddress: BATCH_TRANSFER_ADDRESS
-            })
-            authorizationList = [authorization]
-          } else {
-            setStep('signing-authorization')
-            const authorization = await walletClient.signAuthorization({
-              executor: 'self',
-              contractAddress: BATCH_TRANSFER_ADDRESS
-            })
-            authorizationList = [authorization]
-          }
-        }
-        // walletClient.sen
-
-        // 3. Send the batch transfer transaction
+        // -----------------------------------------------------------------
+        // Send the batch via wallet_sendCalls (EIP-5792)
+        // -----------------------------------------------------------------
         setStep('sending-transaction')
 
-        let hash: Hex
+        let batchId: string
 
         if (token.type === 'native') {
-          const totalValue = amounts.reduce((sum, a) => sum + a, 0n)
-
-          hash = await walletClient.writeContract({
-            abi: batchTransferABI,
-            address: address, // EIP-7702: call the EOA itself
-            functionName: 'batchTransferETH',
-            args: [recipients, amounts],
-            value: totalValue,
-            ...(authorizationList ? { authorizationList, type: 'eip7702' } : {})
+          // ETH: one simple value transfer per recipient
+          const result = await sendCalls(config, {
+            account: address,
+            calls: recipients.map((to, i) => ({
+              to,
+              value: amounts[i],
+            })),
           })
+          batchId = result.id
         } else if (token.type === 'erc20') {
-          // hash = await walletClient.writeContract({
-          //   abi: batchTransferABI,
-          //   address: address, // EIP-7702: call the EOA itself
-          //   functionName: 'batchTransferERC20',
-          //   args: [token.address, recipients, amounts],
-          //   ...(authorizationList ? { authorizationList, type: 'eip7702' } : {}),
-          // })
-          console.log('REACHED HERE!!!!')
-          const data = encodeFunctionData({
-            abi: batchTransferABI,
-            functionName: 'batchTransferERC20',
-            args: [token.address, recipients, amounts]
+          // ERC-20: one transfer() call per recipient
+          // No approval needed — under EIP-7702 the EOA *is* the sender
+          const result = await sendCalls(config, {
+            account: address,
+            calls: recipients.map((to, i) => ({
+              to: token.address,
+              abi: erc20Abi,
+              functionName: 'transfer' as const,
+              args: [to, amounts[i]] as const,
+            })),
           })
-
-          const tx = {
-            account: address, // from
-            to: address, // EIP-7702 self-call
-            data,
-            // value: 0n, // ERC20 transfer call is nonpayable
-            ...(authorizationList
-              ? { authorizationList, /* type: 'eip7702' as const */ }
-              : {})
-          }
-
-          // signs + broadcasts via wallet
-
-          hash = await walletClient.sendTransaction(tx)
+          batchId = result.id
         } else {
-          throw new Error(`Unsupported token type`)
+          throw new Error('Unsupported token type')
         }
 
-        // 4. Wait for confirmation
+        // -----------------------------------------------------------------
+        // Poll for confirmation
+        // -----------------------------------------------------------------
         setStep('confirming')
-        const receipt = await publicClient.waitForTransactionReceipt({ hash })
 
-        if (receipt.status === 'reverted') {
-          throw new Error('Transaction reverted')
+        const startTime = Date.now()
+        let hash: string | null = null
+
+        while (Date.now() - startTime < POLL_TIMEOUT) {
+          const status = await getCallsStatus(config, { id: batchId })
+
+          if (status.status === 'success') {
+            hash = status.receipts?.[0]?.transactionHash ?? batchId
+            break
+          }
+
+          if (status.status === 'failure') {
+            throw new Error('Batch transaction failed on-chain')
+          }
+
+          // Wait before next poll
+          await new Promise(r => setTimeout(r, POLL_INTERVAL))
+        }
+
+        if (!hash) {
+          throw new Error(
+            'Transaction submitted but confirmation timed out. Check your wallet or block explorer for status.'
+          )
         }
 
         setTxHash(hash)
         setStep('success')
         return { txHash: hash, error: null }
       } catch (err: any) {
-        const rawMsg = err?.shortMessage ?? err?.message ?? 'Transaction failed'
-        const lower = String(rawMsg).toLowerCase()
-        const isInvalidParams =
-          lower.includes('invalid parameters') ||
-          lower.includes('invalid params')
-        const msg =
-          isInvalidParams && lower.includes('rpc')
-            ? 'Wallet rejected EIP-7702 transaction parameters. Please update/switch wallet or network to one that supports EIP-7702 (type 0x4).'
-            : rawMsg
+        const msg = err?.shortMessage ?? err?.message ?? 'Transaction failed'
         setError(msg)
         setStep('error')
         return { txHash: null, error: msg }
       }
     },
-    [address, walletClient, publicClient]
+    [address]
   )
 
   return { step, txHash, error, execute, reset }

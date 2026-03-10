@@ -1,0 +1,103 @@
+Now we can start with adding a button to the Funds Management page. I'm thinking of adding a button under the chat window on the host's dashboard that takes the host to a dashboard where he's able to select his wallet and send funds to multiple attendees at the same time, for which I have already created a batch transfer contract (BatchTransfer.sol), I intend to delegate this contract to the host's selected wallet address using EIP 7702.
+
+
+
+Since we'll be using 7702, the code for it will look like // You're redefining walletClient with the same name
+
+const authorization = await walletClient.signAuthorization({
+
+  account: eoa,
+
+  executor: 'self',
+
+  contractAddress
+
+})
+
+// First tx: set delegation + call function (includes authorizationList)
+
+const hash = await walletClient.writeContract({
+
+  abi,
+
+  address: walletClient.account.address,
+
+  authorizationList: [authorization],
+
+  functionName: 'batchTransferETH', // or whatever function
+
+  args: [recipients, amounts]
+
+})
+
+// Subsequent txs: no authorizationList needed, delegation persists
+
+const hash2 = await walletClient.writeContract({
+
+  abi,
+
+  address: walletClient.account.address,
+
+  functionName: 'batchTransferETH',
+
+  args: [recipients2, amounts2]
+
+})
+
+
+
+Also, I intend to execute the authorisation transaction only when I see an EOA is not delegated to my BatchTransfer.sol contract so maybe we can use the following code as a reference:
+
+
+
+const BATCH_TRANSFER_ADDRESS = '0xac2605...' // your deployed BatchTransfer address
+
+function isDelegatedToBatchTransfer(code) {
+
+  // EIP-7702 delegation designator: 0xef0100 + 20-byte address
+
+  const prefix = '0xef0100'
+
+  
+
+  if (!code.startsWith(prefix)) return false
+
+  
+
+  const delegateAddress = '0x' + code.slice(prefix.length)
+
+  return delegateAddress.toLowerCase() === BATCH_TRANSFER_ADDRESS.toLowerCase()
+
+}
+
+// Usage
+
+const code = await provider.getCode(eoaAddress)
+
+if (code === '0x') {
+
+  console.log('Regular EOA, no delegation')
+
+} else if (isDelegatedToBatchTransfer(code)) {
+
+  console.log('Delegated to our BatchTransfer contract')
+
+} else if (code.startsWith('0xef0100')) {
+
+  const otherContract = '0x' + code.slice(8)
+
+  console.log(`Delegated to a different contract: ${otherContract}`)
+
+} else {
+
+  console.log('This is a regular contract, not an EOA delegation')
+
+}
+
+
+
+Here BATCH_TRANSFER_ADDRESS would be set in the .env file.
+
+
+
+Let's execute this.

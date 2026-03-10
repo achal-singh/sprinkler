@@ -30,7 +30,8 @@ import {
 import type { Workshop, Attendee, Milestone, ChatMessage } from '@/lib/types'
 import { generateId, truncateAddress } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
-import { ChevronDown, LogOut, ArrowLeft } from 'lucide-react'
+import { ChevronDown, LogOut, ArrowLeft, Wallet } from 'lucide-react'
+import Link from 'next/link'
 import { Spinner } from '@/components/ui/spinner'
 
 export default function WorkshopSessionPage() {
@@ -678,7 +679,7 @@ export default function WorkshopSessionPage() {
           </div>
 
           {/* Middle - Chat */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 space-y-4">
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 h-[600px] flex flex-col">
               <div className="p-4 border-b border-gray-200 dark:border-gray-700">
                 <h2 className="font-semibold text-lg text-gray-900 dark:text-white">
@@ -697,6 +698,16 @@ export default function WorkshopSessionPage() {
                 )}
               </div>
             </div>
+
+            {/* Send Funds button — host only */}
+            {isHost && (
+              <Link href={`/workshop/${sessionCode}/pay`}>
+                <Button className="w-full gap-2" size="lg">
+                  <Wallet className="h-5 w-5" />
+                  Send Funds to Attendees
+                </Button>
+              </Link>
+            )}
           </div>
 
           {/* Right Sidebar - Milestones (Host) or Attendees (Attendee) */}

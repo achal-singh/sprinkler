@@ -701,8 +701,8 @@ export default function WorkshopSessionPage() {
 
             {/* Send Funds button — host only */}
             {isHost && (
-              <Link href={`/workshop/${sessionCode}/pay`}>
-                <Button className="w-full gap-2" size="lg">
+              <Link href={`/workshop/${sessionCode}/pay`} className="block">
+                <Button className="w-full gap-2 mt-2" size="lg">
                   <Wallet className="h-5 w-5" />
                   Send Funds to Attendees
                 </Button>

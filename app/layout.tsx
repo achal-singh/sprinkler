@@ -4,6 +4,7 @@ import '@rainbow-me/rainbowkit/styles.css'
 import { ThemeProvider } from '@/lib/contexts/ThemeContext'
 import { Providers } from '@/components/Providers'
 import ThemeToggle from '@/components/ThemeToggle'
+import { RouteLoadingBar } from '@/components/RouteLoadingBar'
 
 export const metadata: Metadata = {
   title: 'Sprinkler - Web3 Workshop Platform',
@@ -21,6 +22,7 @@ export default function RootLayout({
       <body className="antialiased bg-white dark:bg-black text-gray-900 dark:text-gray-100">
         <ThemeProvider>
           <Providers>
+            <RouteLoadingBar />
             <ThemeToggle />
             {children}
           </Providers>

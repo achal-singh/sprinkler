@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSupabase } from '@/lib/supabase';
 import { generateId, isValidAddress } from '@/lib/utils';
+import { validateEmail } from '@/lib/validateEmail';
 import { JoinWorkshopRequest } from '@/lib/types';
 
 export async function POST(request: NextRequest) {
@@ -8,9 +9,9 @@ export async function POST(request: NextRequest) {
     const body: JoinWorkshopRequest = await request.json();
     const { sessionCode, walletAddress, email, displayName } = body;
 
-    if (!sessionCode || !walletAddress) {
+    if (!sessionCode || !walletAddress || !displayName?.trim() || !email?.trim()) {
       return NextResponse.json(
-        { error: 'Session code and wallet address are required' },
+        { error: 'Session code, wallet address, display name, and email are required' },
         { status: 400 }
       );
     }
@@ -18,6 +19,14 @@ export async function POST(request: NextRequest) {
     if (!isValidAddress(walletAddress)) {
       return NextResponse.json(
         { error: 'Invalid wallet address' },
+        { status: 400 }
+      );
+    }
+
+    const emailError = validateEmail(email!);
+    if (emailError) {
+      return NextResponse.json(
+        { error: emailError },
         { status: 400 }
       );
     }
@@ -43,6 +52,14 @@ export async function POST(request: NextRequest) {
     if (walletAddress.toLowerCase() === workshop.host_wallet.toLowerCase()) {
       return NextResponse.json(
         { error: 'Host cannot join as an attendee. Please access the host dashboard directly.' },
+        { status: 403 }
+      );
+    }
+
+    // Check if attendee is using the host's email
+    if (email && workshop.host_email && email.toLowerCase().trim() === workshop.host_email.toLowerCase()) {
+      return NextResponse.json(
+        { error: 'This email belongs to the workshop host. Please use a different email address.' },
         { status: 403 }
       );
     }

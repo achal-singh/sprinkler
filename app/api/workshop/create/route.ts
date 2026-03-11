@@ -1,17 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSupabase } from '@/lib/supabase'
 import { generateSessionCode, generateId } from '@/lib/utils'
+import { validateEmail } from '@/lib/validateEmail'
 import { CreateWorkshopRequest, CreateWorkshopResponse } from '@/lib/types'
 import QRCode from 'qrcode'
 
 export async function POST(request: NextRequest) {
   try {
     const body: CreateWorkshopRequest = await request.json()
-    const { title, description, hostWallet } = body
+    const { title, description, hostWallet, hostName, hostEmail } = body
 
-    if (!title || !hostWallet) {
+    if (!title || !hostWallet || !hostName || !hostEmail) {
       return NextResponse.json(
-        { error: 'Title and host wallet are required' },
+        { error: 'Title, host name, email, and wallet are required' },
+        { status: 400 }
+      )
+    }
+
+    const emailError = validateEmail(hostEmail)
+    if (emailError) {
+      return NextResponse.json(
+        { error: emailError },
         { status: 400 }
       )
     }
@@ -28,6 +37,8 @@ export async function POST(request: NextRequest) {
         title,
         description,
         host_wallet: hostWallet,
+        host_name: hostName.trim(),
+        host_email: hostEmail.toLowerCase().trim(),
         session_code: sessionCode,
         status: 'active'
       })

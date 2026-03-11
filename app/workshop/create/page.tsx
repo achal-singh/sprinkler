@@ -18,6 +18,8 @@ export default function CreateWorkshopPage() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    hostName: '',
+    hostEmail: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,12 +34,24 @@ export default function CreateWorkshopPage() {
     setError('');
 
     try {
+      // Client-side disposable email check
+      const { validateEmail: checkEmail } = await import('@/lib/validateEmail');
+      const emailError = checkEmail(formData.hostEmail);
+      if (emailError) {
+        setError(emailError);
+        setIsLoading(false);
+        return;
+      }
+
       const response = await fetch('/api/workshop/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
+          title: formData.title,
+          description: formData.description,
           hostWallet: address,
+          hostName: formData.hostName,
+          hostEmail: formData.hostEmail,
         }),
       });
 
@@ -90,6 +104,39 @@ export default function CreateWorkshopPage() {
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                 placeholder="e.g., Intro to DeFi"
               />
+            </div>
+
+            <div>
+              <label htmlFor="hostName" className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">
+                Your Name *
+              </label>
+              <input
+                id="hostName"
+                type="text"
+                required
+                value={formData.hostName}
+                onChange={(e) => setFormData({ ...formData, hostName: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                placeholder="e.g., John Doe"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="hostEmail" className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">
+                Email *
+              </label>
+              <input
+                id="hostEmail"
+                type="email"
+                required
+                value={formData.hostEmail}
+                onChange={(e) => setFormData({ ...formData, hostEmail: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                placeholder="your.email@example.com"
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Temporary/disposable emails are not allowed
+              </p>
             </div>
 
             <div>

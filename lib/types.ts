@@ -5,6 +5,8 @@ export interface Workshop {
   title: string;
   description: string | null;
   host_wallet: string;
+  host_name: string;
+  host_email: string;
   session_code: string; // Short code for easy joining (e.g., "ABC123")
   status: 'active' | 'completed' | 'cancelled';
   created_at: string;
@@ -54,6 +56,8 @@ export interface CreateWorkshopRequest {
   title: string;
   description?: string;
   hostWallet: string;
+  hostName: string;
+  hostEmail: string;
 }
 
 export interface CreateWorkshopResponse {

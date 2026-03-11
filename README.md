@@ -1,6 +1,8 @@
-# Sprinkler - Web3 Workshop Platform
+# [Sprinkler](https://sprinkler.vercel.app/) - Web3 Workshop Platform
 
 An interactive platform for hosting Web3 workshops with real-time collaboration, milestone tracking, and batch test funds distribution.
+
+**Experience it here:** https://sprinkler.vercel.app
 
 ## Features
 

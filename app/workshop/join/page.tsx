@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAccount } from 'wagmi';
 import { useEffect } from 'react';
@@ -10,6 +10,18 @@ import { LoadingButton } from '@/components/ui/loading-button';
 import { LoadingBar } from '@/components/ui/loading-bar';
 
 export default function JoinWorkshopPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600" />
+      </div>
+    }>
+      <JoinWorkshopContent />
+    </Suspense>
+  );
+}
+
+function JoinWorkshopContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { address, isConnected } = useAccount();

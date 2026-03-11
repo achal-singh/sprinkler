@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import './globals.css'
 import '@rainbow-me/rainbowkit/styles.css'
 import { ThemeProvider } from '@/lib/contexts/ThemeContext'
@@ -22,7 +23,9 @@ export default function RootLayout({
       <body className="antialiased bg-white dark:bg-black text-gray-900 dark:text-gray-100">
         <ThemeProvider>
           <Providers>
-            <RouteLoadingBar />
+            <Suspense fallback={null}>
+              <RouteLoadingBar />
+            </Suspense>
             <ThemeToggle />
             {children}
           </Providers>

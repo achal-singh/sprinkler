@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from 'react'
 import { useAccount } from 'wagmi'
-import { type Address, erc20Abi, parseUnits } from 'viem'
+import { type Address, erc20Abi } from 'viem'
 import { sendCalls, getCallsStatus } from '@wagmi/core'
 import { config } from '@/lib/wagmi'
 import type { PaymentToken } from '@/lib/contracts/batchTransfer'
@@ -71,8 +71,8 @@ export function useBatchTransfer() {
             account: address,
             calls: recipients.map((to, i) => ({
               to,
-              value: amounts[i],
-            })),
+              value: amounts[i]
+            }))
           })
           batchId = result.id
         } else if (token.type === 'erc20') {
@@ -84,8 +84,8 @@ export function useBatchTransfer() {
               to: token.address,
               abi: erc20Abi,
               functionName: 'transfer' as const,
-              args: [to, amounts[i]] as const,
-            })),
+              args: [to, amounts[i]] as const
+            }))
           })
           batchId = result.id
         } else {

@@ -3,14 +3,27 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAccount, useBalance, usePublicClient } from 'wagmi'
-import { parseEther, parseUnits, formatEther, formatUnits, type Address, isAddress, erc20Abi } from 'viem'
+import {
+  parseUnits,
+  formatEther,
+  formatUnits,
+  type Address,
+  isAddress,
+  erc20Abi
+} from 'viem'
 import Link from 'next/link'
 
 import { supabase } from '@/lib/supabase'
 import { truncateAddress } from '@/lib/utils'
 import type { Workshop, Attendee, Milestone } from '@/lib/types'
-import type { PaymentToken, PaymentRecipient } from '@/lib/contracts/batchTransfer'
-import { useBatchTransfer, type TransferStep } from '@/lib/hooks/useBatchTransfer'
+import type {
+  PaymentToken,
+  PaymentRecipient
+} from '@/lib/contracts/batchTransfer'
+import {
+  useBatchTransfer,
+  type TransferStep
+} from '@/lib/hooks/useBatchTransfer'
 
 import { Button } from '@/components/ui/button'
 import { LoadingButton } from '@/components/ui/loading-button'
@@ -28,7 +41,7 @@ const STEP_LABELS: Record<TransferStep, string> = {
   'sending-transaction': 'Confirm the batch transfer in your wallet...',
   confirming: 'Waiting for on-chain confirmation...',
   success: 'Transfer complete!',
-  error: 'Transfer failed',
+  error: 'Transfer failed'
 }
 
 // ---------------------------------------------------------------------------
@@ -47,14 +60,20 @@ export default function PaymentPage() {
   const [workshop, setWorkshop] = useState<Workshop | null>(null)
   const [attendees, setAttendees] = useState<Attendee[]>([])
   const [milestones, setMilestones] = useState<Milestone[]>([])
-  const [completions, setCompletions] = useState<Map<string, Set<string>>>(new Map())
+  const [completions, setCompletions] = useState<Map<string, Set<string>>>(
+    new Map()
+  )
   const [pageLoading, setPageLoading] = useState(true)
   const [pageError, setPageError] = useState('')
 
   // ---- Token selection ----
   const [tokenType, setTokenType] = useState<'native' | 'erc20'>('native')
   const [erc20Address, setErc20Address] = useState('')
-  const [erc20Info, setErc20Info] = useState<{ symbol: string; decimals: number; balance: bigint } | null>(null)
+  const [erc20Info, setErc20Info] = useState<{
+    symbol: string
+    decimals: number
+    balance: bigint
+  } | null>(null)
   const [erc20Loading, setErc20Loading] = useState(false)
   const [erc20Error, setErc20Error] = useState('')
 
@@ -67,7 +86,13 @@ export default function PaymentPage() {
   const [milestoneFilter, setMilestoneFilter] = useState<string>('all')
 
   // ---- Batch transfer ----
-  const { step, txHash, error: txError, execute, reset: resetTx } = useBatchTransfer()
+  const {
+    step,
+    txHash,
+    error: txError,
+    execute,
+    reset: resetTx
+  } = useBatchTransfer()
 
   // -----------------------------------------------------------------------
   // Load workshop data
@@ -88,7 +113,10 @@ export default function PaymentPage() {
         setWorkshop(ws)
 
         // Auth check — only the host may access
-        if (!address || address.toLowerCase() !== ws.host_wallet.toLowerCase()) {
+        if (
+          !address ||
+          address.toLowerCase() !== ws.host_wallet.toLowerCase()
+        ) {
           router.push(`/workshop/${sessionCode}`)
           return
         }
@@ -114,7 +142,10 @@ export default function PaymentPage() {
           const { data: comps } = await supabase
             .from('milestone_completions')
             .select('milestone_id, attendee_id')
-            .in('milestone_id', ms.map(m => m.id))
+            .in(
+              'milestone_id',
+              ms.map(m => m.id)
+            )
 
           if (comps) {
             const map = new Map<string, Set<string>>()
@@ -148,7 +179,7 @@ export default function PaymentPage() {
         address: a.wallet_address as Address,
         displayName: a.display_name,
         amount: uniformAmount || '',
-        selected: true,
+        selected: true
       }))
     )
   }, [attendees])
@@ -170,23 +201,29 @@ export default function PaymentPage() {
         publicClient.readContract({
           address: erc20Address as Address,
           abi: erc20Abi,
-          functionName: 'symbol',
+          functionName: 'symbol'
         }),
         publicClient.readContract({
           address: erc20Address as Address,
           abi: erc20Abi,
-          functionName: 'decimals',
+          functionName: 'decimals'
         }),
         publicClient.readContract({
           address: erc20Address as Address,
           abi: erc20Abi,
           functionName: 'balanceOf',
-          args: [address],
-        }),
+          args: [address]
+        })
       ])
-      setErc20Info({ symbol: symbol as string, decimals: Number(decimals), balance: balance as bigint })
+      setErc20Info({
+        symbol: symbol as string,
+        decimals: Number(decimals),
+        balance: balance as bigint
+      })
     } catch {
-      setErc20Error('Could not read token info. Is this a valid ERC-20 address?')
+      setErc20Error(
+        'Could not read token info. Is this a valid ERC-20 address?'
+      )
       setErc20Info(null)
     } finally {
       setErc20Loading(false)
@@ -223,15 +260,20 @@ export default function PaymentPage() {
 
   const toggleRecipient = useCallback((attendeeId: string) => {
     setRecipients(prev =>
-      prev.map(r => (r.attendeeId === attendeeId ? { ...r, selected: !r.selected } : r))
+      prev.map(r =>
+        r.attendeeId === attendeeId ? { ...r, selected: !r.selected } : r
+      )
     )
   }, [])
 
-  const updateRecipientAmount = useCallback((attendeeId: string, amount: string) => {
-    setRecipients(prev =>
-      prev.map(r => (r.attendeeId === attendeeId ? { ...r, amount } : r))
-    )
-  }, [])
+  const updateRecipientAmount = useCallback(
+    (attendeeId: string, amount: string) => {
+      setRecipients(prev =>
+        prev.map(r => (r.attendeeId === attendeeId ? { ...r, amount } : r))
+      )
+    },
+    []
+  )
 
   const selectAll = useCallback((selected: boolean) => {
     setRecipients(prev => prev.map(r => ({ ...r, selected })))
@@ -241,7 +283,10 @@ export default function PaymentPage() {
   // Computed summary
   // -----------------------------------------------------------------------
 
-  const activeRecipients = useMemo(() => filteredRecipients.filter(r => r.selected && r.amount), [filteredRecipients])
+  const activeRecipients = useMemo(
+    () => filteredRecipients.filter(r => r.selected && r.amount),
+    [filteredRecipients]
+  )
 
   const decimals = tokenType === 'erc20' && erc20Info ? erc20Info.decimals : 18
   const symbol = tokenType === 'erc20' && erc20Info ? erc20Info.symbol : 'ETH'
@@ -250,9 +295,9 @@ export default function PaymentPage() {
     try {
       return activeRecipients.reduce((sum, r) => {
         return sum + parseUnits(r.amount, decimals)
-      }, 0n)
+      }, BigInt(0))
     } catch {
-      return 0n
+      return BigInt(0)
     }
   }, [activeRecipients, decimals])
 
@@ -271,7 +316,12 @@ export default function PaymentPage() {
     const token: PaymentToken =
       tokenType === 'native'
         ? { type: 'native' }
-        : { type: 'erc20', address: erc20Address as Address, symbol: erc20Info!.symbol, decimals: erc20Info!.decimals }
+        : {
+            type: 'erc20',
+            address: erc20Address as Address,
+            symbol: erc20Info!.symbol,
+            decimals: erc20Info!.decimals
+          }
 
     await execute(token, addresses, amounts)
   }
@@ -281,7 +331,8 @@ export default function PaymentPage() {
   // -----------------------------------------------------------------------
 
   const isTransacting = ['sending-transaction', 'confirming'].includes(step)
-  const canSend = activeRecipients.length > 0 && totalAmount > 0n && !isTransacting
+  const canSend =
+    activeRecipients.length > 0 && totalAmount > BigInt(0) && !isTransacting
 
   // -----------------------------------------------------------------------
   // Loading / error states
@@ -292,7 +343,9 @@ export default function PaymentPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Spinner size="lg" className="mx-auto text-blue-600" />
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading payment dashboard...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">
+            Loading payment dashboard...
+          </p>
         </div>
       </div>
     )
@@ -302,7 +355,9 @@ export default function PaymentPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
-          <p className="text-red-600 dark:text-red-400">{pageError || 'Workshop not found'}</p>
+          <p className="text-red-600 dark:text-red-400">
+            {pageError || 'Workshop not found'}
+          </p>
           <Link
             href={`/workshop/${sessionCode}?host=true`}
             className="text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-2"
@@ -355,7 +410,10 @@ export default function PaymentPage() {
 
           <div className="flex gap-2">
             <button
-              onClick={() => { setTokenType('native'); setErc20Error('') }}
+              onClick={() => {
+                setTokenType('native')
+                setErc20Error('')
+              }}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 tokenType === 'native'
                   ? 'bg-blue-600 text-white'
@@ -393,15 +451,22 @@ export default function PaymentPage() {
                   <Spinner size="sm" /> Fetching token info...
                 </div>
               )}
-              {erc20Error && <p className="text-sm text-red-600 dark:text-red-400">{erc20Error}</p>}
+              {erc20Error && (
+                <p className="text-sm text-red-600 dark:text-red-400">
+                  {erc20Error}
+                </p>
+              )}
               {erc20Info && (
                 <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg text-sm">
-                  <span className="font-medium text-gray-900 dark:text-white">{erc20Info.symbol}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {erc20Info.symbol}
+                  </span>
                   <span className="text-gray-500 dark:text-gray-400 ml-2">
                     ({erc20Info.decimals} decimals)
                   </span>
                   <span className="text-gray-500 dark:text-gray-400 ml-2">
-                    Balance: {formatUnits(erc20Info.balance, erc20Info.decimals)}
+                    Balance:{' '}
+                    {formatUnits(erc20Info.balance, erc20Info.decimals)}
                   </span>
                 </div>
               )}
@@ -410,7 +475,10 @@ export default function PaymentPage() {
 
           {tokenType === 'native' && nativeBalance && (
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              Wallet balance: <span className="font-medium text-gray-900 dark:text-white">{parseFloat(formatEther(nativeBalance.value)).toFixed(4)} ETH</span>
+              Wallet balance:{' '}
+              <span className="font-medium text-gray-900 dark:text-white">
+                {parseFloat(formatEther(nativeBalance.value)).toFixed(4)} ETH
+              </span>
             </div>
           )}
         </div>
@@ -420,7 +488,9 @@ export default function PaymentPage() {
         {/* ============================================================= */}
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-gray-900 dark:text-white">Recipients</h2>
+            <h2 className="font-semibold text-gray-900 dark:text-white">
+              Recipients
+            </h2>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => selectAll(true)}
@@ -440,7 +510,9 @@ export default function PaymentPage() {
           {/* Milestone filter */}
           {milestones.length > 0 && (
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Filter by milestone:</span>
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                Filter by milestone:
+              </span>
               <button
                 onClick={() => setMilestoneFilter('all')}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
@@ -476,23 +548,36 @@ export default function PaymentPage() {
               placeholder={`Amount per recipient (${symbol})`}
               className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
-            <Button size="sm" variant="secondary" onClick={applyUniformAmount} disabled={!uniformAmount}>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={applyUniformAmount}
+              disabled={!uniformAmount}
+            >
               Set All
             </Button>
           </div>
 
           {/* Recipient table */}
           {filteredRecipients.length === 0 ? (
-            <p className="text-center text-gray-500 dark:text-gray-400 py-6">No attendees in this workshop yet.</p>
+            <p className="text-center text-gray-500 dark:text-gray-400 py-6">
+              No attendees in this workshop yet.
+            </p>
           ) : (
             <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 dark:bg-gray-700/50 text-left">
                   <tr>
                     <th className="px-4 py-2 font-medium text-gray-600 dark:text-gray-400 w-10"></th>
-                    <th className="px-4 py-2 font-medium text-gray-600 dark:text-gray-400">Attendee</th>
-                    <th className="px-4 py-2 font-medium text-gray-600 dark:text-gray-400">Wallet</th>
-                    <th className="px-4 py-2 font-medium text-gray-600 dark:text-gray-400">Milestones</th>
+                    <th className="px-4 py-2 font-medium text-gray-600 dark:text-gray-400">
+                      Attendee
+                    </th>
+                    <th className="px-4 py-2 font-medium text-gray-600 dark:text-gray-400">
+                      Wallet
+                    </th>
+                    <th className="px-4 py-2 font-medium text-gray-600 dark:text-gray-400">
+                      Milestones
+                    </th>
                     <th className="px-4 py-2 font-medium text-gray-600 dark:text-gray-400 text-right">
                       Amount ({symbol})
                     </th>
@@ -500,7 +585,9 @@ export default function PaymentPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                   {filteredRecipients.map(r => {
-                    const completedCount = milestones.filter(m => completions.get(m.id)?.has(r.attendeeId)).length
+                    const completedCount = milestones.filter(m =>
+                      completions.get(m.id)?.has(r.attendeeId)
+                    ).length
 
                     return (
                       <tr
@@ -530,7 +617,12 @@ export default function PaymentPage() {
                           <input
                             type="text"
                             value={r.amount}
-                            onChange={e => updateRecipientAmount(r.attendeeId, e.target.value)}
+                            onChange={e =>
+                              updateRecipientAmount(
+                                r.attendeeId,
+                                e.target.value
+                              )
+                            }
                             disabled={!r.selected}
                             placeholder="0.0"
                             className="w-full text-right px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm disabled:opacity-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -558,7 +650,8 @@ export default function PaymentPage() {
                 {formattedTotal} {symbol}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                to {activeRecipients.length} {activeRecipients.length === 1 ? 'recipient' : 'recipients'}
+                to {activeRecipients.length}{' '}
+                {activeRecipients.length === 1 ? 'recipient' : 'recipients'}
               </p>
             </div>
 
@@ -604,8 +697,13 @@ export default function PaymentPage() {
           {/* Error */}
           {step === 'error' && txError && (
             <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800 rounded-lg space-y-2">
-              <p className="text-sm text-red-700 dark:text-red-300">{txError}</p>
-              <button onClick={resetTx} className="text-xs text-red-600 dark:text-red-400 hover:underline">
+              <p className="text-sm text-red-700 dark:text-red-300">
+                {txError}
+              </p>
+              <button
+                onClick={resetTx}
+                className="text-xs text-red-600 dark:text-red-400 hover:underline"
+              >
                 Dismiss & try again
               </button>
             </div>

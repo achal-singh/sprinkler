@@ -71,21 +71,19 @@ export default function CreateWorkshopPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div
+      className="min-h-screen flex items-center justify-center px-6 py-10"
+      style={{ ['--accent' as string]: '#2f6df6' }}
+    >
       <div className="max-w-md w-full space-y-6">
-        <div className="text-center">
-          <Link
-            href="/"
-            className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm"
-          >
-            ← Back to Home
+        <div className="text-center space-y-3">
+          <Link href="/" className="neo-link text-sm">
+            &lt;- Back to Home
           </Link>
-          <h1 className="text-3xl font-bold mt-4 text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">
             Create Workshop
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Host a new Web3 workshop session
-          </p>
+          <p className="neo-muted">Host a new Web3 workshop session.</p>
         </div>
 
         {/* Wallet Connection */}
@@ -96,13 +94,13 @@ export default function CreateWorkshopPage() {
         {isConnected && address && (
           <form
             onSubmit={handleSubmit}
-            className="relative space-y-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
+            className="relative space-y-4 neo-panel p-6 overflow-hidden"
           >
             <LoadingBar isLoading={isLoading} />
             <div>
               <label
                 htmlFor="title"
-                className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100"
+                className="block text-sm font-semibold mb-2 text-gray-900 dark:text-gray-100"
               >
                 Workshop Title *
               </label>
@@ -114,7 +112,7 @@ export default function CreateWorkshopPage() {
                 onChange={e =>
                   setFormData({ ...formData, title: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                className="neo-input"
                 placeholder="e.g., Intro to DeFi"
               />
             </div>
@@ -122,7 +120,7 @@ export default function CreateWorkshopPage() {
             <div>
               <label
                 htmlFor="hostName"
-                className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100"
+                className="block text-sm font-semibold mb-2 text-gray-900 dark:text-gray-100"
               >
                 Your Name *
               </label>
@@ -134,7 +132,7 @@ export default function CreateWorkshopPage() {
                 onChange={e =>
                   setFormData({ ...formData, hostName: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                className="neo-input"
                 placeholder="e.g., John Doe"
               />
             </div>
@@ -142,7 +140,7 @@ export default function CreateWorkshopPage() {
             <div>
               <label
                 htmlFor="hostEmail"
-                className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100"
+                className="block text-sm font-semibold mb-2 text-gray-900 dark:text-gray-100"
               >
                 Email *
               </label>
@@ -154,10 +152,10 @@ export default function CreateWorkshopPage() {
                 onChange={e =>
                   setFormData({ ...formData, hostEmail: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                className="neo-input"
                 placeholder="your.email@example.com"
               />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs neo-muted mt-1">
                 Temporary/disposable emails are not allowed
               </p>
             </div>
@@ -165,7 +163,7 @@ export default function CreateWorkshopPage() {
             <div>
               <label
                 htmlFor="description"
-                className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100"
+                className="block text-sm font-semibold mb-2 text-gray-900 dark:text-gray-100"
               >
                 Description (Optional)
               </label>
@@ -176,20 +174,20 @@ export default function CreateWorkshopPage() {
                   setFormData({ ...formData, description: e.target.value })
                 }
                 rows={3}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                className="neo-input min-h-[110px] resize-none"
                 placeholder="Brief description of your workshop..."
               />
             </div>
 
-            <div className="p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg">
-              <p className="text-sm text-blue-700 dark:text-blue-300">
+            <div className="p-3 neo-surface">
+              <p className="text-sm text-gray-700 dark:text-gray-200">
                 <strong>Connected Wallet:</strong> {address.slice(0, 6)}...
                 {address.slice(-4)}
               </p>
             </div>
 
             {error && (
-              <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-sm">
+              <div className="p-3 neo-surface text-red-600 dark:text-red-300 text-sm">
                 {error}
               </div>
             )}
@@ -206,7 +204,7 @@ export default function CreateWorkshopPage() {
         )}
 
         {isConnected && (
-          <div className="text-center text-sm text-gray-500 dark:text-gray-400">
+          <div className="text-center text-sm neo-muted">
             <p>After creating, you'll receive a QR code and session code</p>
             <p>to share with your attendees</p>
           </div>

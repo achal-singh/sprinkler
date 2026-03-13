@@ -18,13 +18,13 @@ export function LoadingBar({ isLoading, className }: LoadingBarProps) {
   return (
     <div
       className={cn(
-        'pointer-events-none absolute inset-x-0 top-0 z-50 h-[3px] overflow-hidden bg-blue-200/30 dark:bg-blue-900/30',
+        'neo-loading-bar pointer-events-none absolute inset-x-0 top-0 z-50 h-[3px] overflow-hidden',
         className
       )}
       role="progressbar"
       aria-label="Loading"
     >
-      <div className="h-full w-1/3 animate-loading-bar rounded-full bg-blue-600 dark:bg-blue-400" />
+      <div className="neo-loading-bar__fill h-full w-1/3 animate-loading-bar rounded-full" />
     </div>
   )
 }

@@ -38,7 +38,7 @@ export default function AttendeeList({
       </div>
 
       {attendees.length === 0 ? (
-        <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+        <div className="text-center neo-muted py-8">
           <p>No attendees yet</p>
           <p className="text-sm mt-1">Share the session code to invite participants</p>
         </div>
@@ -50,7 +50,7 @@ export default function AttendeeList({
             return (
               <div
                 key={attendee.id}
-                className="p-3 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors bg-white dark:bg-gray-800"
+                className="p-3 neo-surface hover:translate-y-[-1px] transition-transform"
               >
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
@@ -59,11 +59,11 @@ export default function AttendeeList({
                         {attendee.display_name || truncateAddress(attendee.wallet_address)}
                       </p>
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">
+                    <p className="text-xs neo-muted font-mono">
                       {truncateAddress(attendee.wallet_address)}
                     </p>
                     {attendee.email && (
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                      <p className="text-xs neo-muted mt-0.5">
                         {attendee.email}
                       </p>
                     )}
@@ -75,9 +75,9 @@ export default function AttendeeList({
                         <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
                           {progress}%
                         </div>
-                        <div className="w-16 h-2 bg-gray-200 dark:bg-gray-700 rounded-full mt-1 overflow-hidden">
+                        <div className="w-16 h-2 bg-[color:var(--surface-3)] rounded-full mt-1 overflow-hidden">
                           <div
-                            className="h-full bg-green-600 dark:bg-green-500 transition-all duration-300"
+                            className="h-full bg-[color:var(--accent)] transition-all duration-300"
                             style={{ width: `${progress}%` }}
                           />
                         </div>

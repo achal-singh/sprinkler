@@ -341,11 +341,9 @@ export default function PaymentPage() {
   if (pageLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Spinner size="lg" className="mx-auto text-blue-600" />
-          <p className="mt-4 text-gray-600 dark:text-gray-400">
-            Loading payment dashboard...
-          </p>
+        <div className="neo-panel p-6 text-center">
+          <Spinner size="lg" className="mx-auto text-[color:var(--accent)]" />
+          <p className="mt-4 neo-muted">Loading payment dashboard...</p>
         </div>
       </div>
     )
@@ -354,13 +352,13 @@ export default function PaymentPage() {
   if (pageError || !workshop) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-4">
+        <div className="neo-panel p-6 text-center space-y-4">
           <p className="text-red-600 dark:text-red-400">
             {pageError || 'Workshop not found'}
           </p>
           <Link
             href={`/workshop/${sessionCode}?host=true`}
-            className="text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-2"
+            className="neo-link inline-flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" /> Back to workshop
           </Link>
@@ -374,24 +372,24 @@ export default function PaymentPage() {
   // -----------------------------------------------------------------------
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" style={{ ['--accent' as string]: '#2f6df6' }}>
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-5xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+      <div className="max-w-5xl mx-auto px-6 pt-8">
+        <div className="neo-panel px-6 py-5">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <Link
                 href={`/workshop/${sessionCode}?host=true`}
-                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors inline-flex items-center gap-2"
+                className="neo-link inline-flex items-center gap-2 text-sm"
               >
                 <ArrowLeft className="h-5 w-5" />
                 <span className="text-sm">Back to Workshop</span>
               </Link>
               <div>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
                   Send Funds — {workshop.title}
                 </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm neo-muted">
                   Batch transfer to workshop attendees
                 </p>
               </div>
@@ -401,11 +399,11 @@ export default function PaymentPage() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto p-4 space-y-6">
+      <div className="max-w-5xl mx-auto px-6 py-8 space-y-6">
         {/* ============================================================= */}
         {/*  Panel 1: Token Selection                                      */}
         {/* ============================================================= */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5 space-y-4">
+        <div className="neo-panel p-5 space-y-4">
           <h2 className="font-semibold text-gray-900 dark:text-white">Token</h2>
 
           <div className="flex gap-2">
@@ -414,20 +412,20 @@ export default function PaymentPage() {
                 setTokenType('native')
                 setErc20Error('')
               }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 tokenType === 'native'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  ? 'neo-button'
+                  : 'neo-button neo-button--ghost'
               }`}
             >
               ETH
             </button>
             <button
               onClick={() => setTokenType('erc20')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 tokenType === 'erc20'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  ? 'neo-button'
+                  : 'neo-button neo-button--ghost'
               }`}
             >
               ERC-20
@@ -436,7 +434,7 @@ export default function PaymentPage() {
 
           {tokenType === 'erc20' && (
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                 Token Contract Address
               </label>
               <input
@@ -444,10 +442,10 @@ export default function PaymentPage() {
                 value={erc20Address}
                 onChange={e => setErc20Address(e.target.value.trim())}
                 placeholder="0x..."
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                className="neo-input font-mono text-sm"
               />
               {erc20Loading && (
-                <div className="flex items-center gap-2 text-sm text-gray-500">
+                <div className="flex items-center gap-2 text-sm neo-muted">
                   <Spinner size="sm" /> Fetching token info...
                 </div>
               )}
@@ -457,14 +455,14 @@ export default function PaymentPage() {
                 </p>
               )}
               {erc20Info && (
-                <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg text-sm">
+                <div className="p-3 neo-surface text-sm">
                   <span className="font-medium text-gray-900 dark:text-white">
                     {erc20Info.symbol}
                   </span>
-                  <span className="text-gray-500 dark:text-gray-400 ml-2">
+                  <span className="neo-muted ml-2">
                     ({erc20Info.decimals} decimals)
                   </span>
-                  <span className="text-gray-500 dark:text-gray-400 ml-2">
+                  <span className="neo-muted ml-2">
                     Balance:{' '}
                     {formatUnits(erc20Info.balance, erc20Info.decimals)}
                   </span>
@@ -474,7 +472,7 @@ export default function PaymentPage() {
           )}
 
           {tokenType === 'native' && nativeBalance && (
-            <div className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="text-sm neo-muted">
               Wallet balance:{' '}
               <span className="font-medium text-gray-900 dark:text-white">
                 {parseFloat(formatEther(nativeBalance.value)).toFixed(4)} ETH
@@ -486,7 +484,7 @@ export default function PaymentPage() {
         {/* ============================================================= */}
         {/*  Panel 2: Recipients                                           */}
         {/* ============================================================= */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5 space-y-4">
+        <div className="neo-panel p-5 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-gray-900 dark:text-white">
               Recipients
@@ -494,13 +492,13 @@ export default function PaymentPage() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => selectAll(true)}
-                className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                className="text-xs neo-link"
               >
                 Select all
               </button>
               <button
                 onClick={() => selectAll(false)}
-                className="text-xs text-gray-500 dark:text-gray-400 hover:underline"
+                className="text-xs neo-muted hover:text-[color:var(--accent)]"
               >
                 Deselect all
               </button>
@@ -510,15 +508,15 @@ export default function PaymentPage() {
           {/* Milestone filter */}
           {milestones.length > 0 && (
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+              <span className="text-xs font-medium neo-muted">
                 Filter by milestone:
               </span>
               <button
                 onClick={() => setMilestoneFilter('all')}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   milestoneFilter === 'all'
-                    ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    ? 'neo-pill text-[color:var(--accent)]'
+                    : 'neo-pill'
                 }`}
               >
                 All
@@ -529,8 +527,8 @@ export default function PaymentPage() {
                   onClick={() => setMilestoneFilter(m.id)}
                   className={`px-2 py-1 text-xs rounded transition-colors ${
                     milestoneFilter === m.id
-                      ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      ? 'neo-pill text-[color:var(--accent)]'
+                      : 'neo-pill'
                   }`}
                 >
                   #{i + 1} {m.title}
@@ -546,7 +544,7 @@ export default function PaymentPage() {
               value={uniformAmount}
               onChange={e => setUniformAmount(e.target.value)}
               placeholder={`Amount per recipient (${symbol})`}
-              className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="neo-input flex-1 text-sm"
             />
             <Button
               size="sm"
@@ -560,30 +558,30 @@ export default function PaymentPage() {
 
           {/* Recipient table */}
           {filteredRecipients.length === 0 ? (
-            <p className="text-center text-gray-500 dark:text-gray-400 py-6">
+            <p className="text-center neo-muted py-6">
               No attendees in this workshop yet.
             </p>
           ) : (
-            <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+            <div className="neo-surface overflow-hidden">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 dark:bg-gray-700/50 text-left">
+                <thead className="bg-[color:var(--surface-2)] text-left">
                   <tr>
-                    <th className="px-4 py-2 font-medium text-gray-600 dark:text-gray-400 w-10"></th>
-                    <th className="px-4 py-2 font-medium text-gray-600 dark:text-gray-400">
+                    <th className="px-4 py-2 font-medium neo-muted w-10"></th>
+                    <th className="px-4 py-2 font-medium neo-muted">
                       Attendee
                     </th>
-                    <th className="px-4 py-2 font-medium text-gray-600 dark:text-gray-400">
+                    <th className="px-4 py-2 font-medium neo-muted">
                       Wallet
                     </th>
-                    <th className="px-4 py-2 font-medium text-gray-600 dark:text-gray-400">
+                    <th className="px-4 py-2 font-medium neo-muted">
                       Milestones
                     </th>
-                    <th className="px-4 py-2 font-medium text-gray-600 dark:text-gray-400 text-right">
+                    <th className="px-4 py-2 font-medium neo-muted text-right">
                       Amount ({symbol})
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="divide-y divide-[color:var(--surface-border)]">
                   {filteredRecipients.map(r => {
                     const completedCount = milestones.filter(m =>
                       completions.get(m.id)?.has(r.attendeeId)
@@ -592,24 +590,24 @@ export default function PaymentPage() {
                     return (
                       <tr
                         key={r.attendeeId}
-                        className={`transition-colors ${r.selected ? 'bg-white dark:bg-gray-800' : 'bg-gray-50/50 dark:bg-gray-800/50 opacity-60'}`}
+                        className={`transition-colors ${r.selected ? 'bg-transparent' : 'bg-[color:var(--surface-2)] opacity-60'}`}
                       >
                         <td className="px-4 py-3">
                           <input
                             type="checkbox"
                             checked={r.selected}
                             onChange={() => toggleRecipient(r.attendeeId)}
-                            className="rounded border-gray-300 dark:border-gray-600"
+                            className="rounded border-[color:var(--surface-border)]"
                           />
                         </td>
                         <td className="px-4 py-3 text-gray-900 dark:text-gray-100">
                           {r.displayName || 'Anonymous'}
                         </td>
-                        <td className="px-4 py-3 font-mono text-xs text-gray-500 dark:text-gray-400">
+                        <td className="px-4 py-3 font-mono text-xs neo-muted">
                           {truncateAddress(r.address)}
                         </td>
                         <td className="px-4 py-3">
-                          <span className="text-xs text-gray-600 dark:text-gray-400">
+                          <span className="text-xs neo-muted">
                             {completedCount}/{milestones.length}
                           </span>
                         </td>
@@ -625,7 +623,7 @@ export default function PaymentPage() {
                             }
                             disabled={!r.selected}
                             placeholder="0.0"
-                            className="w-full text-right px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm disabled:opacity-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="neo-input w-full text-right px-2 py-1 text-sm disabled:opacity-50"
                           />
                         </td>
                       </tr>
@@ -640,16 +638,16 @@ export default function PaymentPage() {
         {/* ============================================================= */}
         {/*  Panel 3: Review & Send (sticky)                               */}
         {/* ============================================================= */}
-        <div className="sticky bottom-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 shadow-lg space-y-3">
+        <div className="sticky bottom-0 neo-panel p-5 space-y-3">
           <LoadingBar isLoading={isTransacting} className="rounded-t-lg" />
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Total</p>
+              <p className="text-sm neo-muted">Total</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {formattedTotal} {symbol}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs neo-muted">
                 to {activeRecipients.length}{' '}
                 {activeRecipients.length === 1 ? 'recipient' : 'recipients'}
               </p>
@@ -670,7 +668,7 @@ export default function PaymentPage() {
 
           {/* Step indicator */}
           {isTransacting && (
-            <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
+            <div className="flex items-center gap-2 text-sm text-[color:var(--accent)]">
               <Spinner size="sm" />
               {STEP_LABELS[step]}
             </div>
@@ -678,7 +676,7 @@ export default function PaymentPage() {
 
           {/* Success */}
           {step === 'success' && txHash && (
-            <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-800 rounded-lg flex items-center justify-between">
+            <div className="p-3 neo-surface border border-green-200 dark:border-green-800 rounded-2xl flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-300">
                 <CheckCircle2 className="h-4 w-4" />
                 Transfer confirmed!
@@ -696,7 +694,7 @@ export default function PaymentPage() {
 
           {/* Error */}
           {step === 'error' && txError && (
-            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800 rounded-lg space-y-2">
+            <div className="p-3 neo-surface border border-red-200 dark:border-red-800 rounded-2xl space-y-2">
               <p className="text-sm text-red-700 dark:text-red-300">
                 {txError}
               </p>

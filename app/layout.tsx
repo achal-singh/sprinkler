@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
+import { Playfair_Display, Sora } from 'next/font/google'
 import './globals.css'
 import '@rainbow-me/rainbowkit/styles.css'
 import { ThemeProvider } from '@/lib/contexts/ThemeContext'
@@ -13,6 +14,18 @@ export const metadata: Metadata = {
     'Interactive Web3 workshops with real-time collaboration and milestone tracking'
 }
 
+const sora = Sora({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap'
+})
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-serif',
+  display: 'swap'
+})
+
 export default function RootLayout({
   children
 }: Readonly<{
@@ -20,7 +33,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="antialiased bg-white dark:bg-black text-gray-900 dark:text-gray-100">
+      <body
+        className={`${sora.variable} ${playfair.variable} antialiased bg-transparent text-gray-900 dark:text-gray-100`}
+      >
         <ThemeProvider>
           <Providers>
             <Suspense fallback={null}>

@@ -73,7 +73,7 @@ export default function MilestoneList({
         {isHost && onCreateMilestone && (
           <button
             onClick={() => setIsCreating(!isCreating)}
-            className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+            className="neo-button px-4 py-1.5 text-xs"
           >
             {isCreating ? 'Cancel' : '+ Add Milestone'}
           </button>
@@ -82,20 +82,20 @@ export default function MilestoneList({
 
       {/* Create milestone form (host only) */}
       {isCreating && isHost && (
-        <form onSubmit={handleCreateMilestone} className="p-4 border border-gray-300 dark:border-gray-600 rounded-lg space-y-3 bg-gray-50 dark:bg-gray-700">
+        <form onSubmit={handleCreateMilestone} className="neo-panel p-4 space-y-3">
           <input
             type="text"
             placeholder="Milestone title"
             value={newMilestone.title}
             onChange={(e) => setNewMilestone({ ...newMilestone, title: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+            className="neo-input"
             required
           />
           <textarea
             placeholder="Description (optional)"
             value={newMilestone.description}
             onChange={(e) => setNewMilestone({ ...newMilestone, description: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+            className="neo-input min-h-[90px] resize-none"
             rows={2}
           />
           <LoadingButton
@@ -111,7 +111,7 @@ export default function MilestoneList({
 
       {/* Milestones list */}
       {milestones.length === 0 ? (
-        <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+        <div className="text-center neo-muted py-8">
           <p>No milestones yet</p>
           {isHost && (
             <p className="text-sm mt-1">Add your first milestone to track progress</p>
@@ -127,16 +127,16 @@ export default function MilestoneList({
             return (
               <div
                 key={milestone.id}
-                className={`p-4 border rounded-lg transition-colors ${
+                className={`p-4 rounded-2xl transition-colors border ${
                   completed
-                    ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-800'
-                    : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700'
+                    ? 'bg-green-50/70 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                    : 'neo-surface border-[color:var(--surface-border)]'
                 }`}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-mono text-gray-500 dark:text-gray-400">
+                      <span className="text-sm font-mono neo-muted">
                         #{index + 1}
                       </span>
                       <h4 className="font-medium text-gray-900 dark:text-white">{milestone.title}</h4>
@@ -145,11 +145,11 @@ export default function MilestoneList({
                       )}
                     </div>
                     {milestone.description && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      <p className="text-sm neo-muted mt-1">
                         {milestone.description}
                       </p>
                     )}
-                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                    <p className="text-xs neo-muted mt-2">
                       {completionCount} {completionCount === 1 ? 'completion' : 'completions'}
                     </p>
                   </div>
@@ -158,7 +158,7 @@ export default function MilestoneList({
                     <button
                       onClick={() => handleComplete(milestone.id)}
                       disabled={isCompletingThis}
-                      className="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors whitespace-nowrap inline-flex items-center gap-2"
+                      className="neo-button px-4 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap inline-flex items-center gap-2"
                     >
                       {isCompletingThis && <Spinner size="sm" />}
                       {isCompletingThis ? 'Completing...' : 'Mark Complete'}

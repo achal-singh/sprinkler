@@ -484,11 +484,9 @@ export default function WorkshopSessionPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">
-            Loading workshop...
-          </p>
+        <div className="neo-panel p-6 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[color:var(--accent)] mx-auto"></div>
+          <p className="mt-4 neo-muted">Loading workshop...</p>
         </div>
       </div>
     )
@@ -497,14 +495,14 @@ export default function WorkshopSessionPage() {
   if (error || !workshop) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-4">
+        <div className="neo-panel p-6 text-center space-y-4">
           <p className="text-red-600 dark:text-red-400 mb-4">
             {error || 'Workshop not found'}
           </p>
           {error?.includes('connect your wallet') && <WalletConnectButton />}
           <button
             onClick={() => router.push('/')}
-            className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 inline-flex items-center gap-2"
+            className="neo-link inline-flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Home
@@ -518,30 +516,35 @@ export default function WorkshopSessionPage() {
                        (currentUser?.wallet_address ? truncateAddress(currentUser.wallet_address) : 'User')
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" style={{ ['--accent' as string]: '#2f6df6' }}>
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+      <div className="mx-auto max-w-7xl px-6 pt-8">
+        <div className="neo-panel px-6 py-5">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               {isHost && (
                 <button
                   onClick={() => router.push('/')}
-                  className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors inline-flex items-center gap-2"
+                  className="neo-link inline-flex items-center gap-2 text-sm"
                 >
                   <ArrowLeft className="h-5 w-5" />
                   <span className="text-sm">Back</span>
                 </button>
               )}
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
                   {workshop.title}
                 </h1>
                 {workshop.description && (
-                  <p className="text-gray-600 dark:text-gray-400 mt-1">
+                  <p className="neo-muted mt-1">
                     {workshop.description}
                   </p>
                 )}
+                <div className="mt-2">
+                  <span className="neo-pill neo-flat">
+                    Session {sessionCode.toUpperCase()}
+                  </span>
+                </div>
               </div>
             </div>
             <div className="flex gap-2">
@@ -564,18 +567,18 @@ export default function WorkshopSessionPage() {
                       <ChevronDown className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuLabel className="font-normal">
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{displayName}</p>
-                        {currentUser?.email && (
-                          <p className="text-xs leading-none text-gray-500 dark:text-gray-400">
-                            {currentUser.email}
-                          </p>
-                        )}
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuLabel className="font-normal">
+                        <div className="flex flex-col space-y-1">
+                          <p className="text-sm font-medium leading-none">{displayName}</p>
+                          {currentUser?.email && (
+                            <p className="text-xs leading-none neo-muted">
+                              {currentUser.email}
+                            </p>
+                          )}
+                        </div>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
                     <DropdownMenuItem
                       className="text-red-600 dark:text-red-400 focus:text-red-700 dark:focus:text-red-300 cursor-pointer"
                       onClick={() => setShowLeaveConfirm(true)}
@@ -593,7 +596,7 @@ export default function WorkshopSessionPage() {
 
       {/* Leave Workshop Dialog (for attendees) */}
       <AlertDialog open={showLeaveConfirm} onOpenChange={setShowLeaveConfirm}>
-        <AlertDialogContent>
+        <AlertDialogContent className="neo-flat">
           <AlertDialogHeader>
             <AlertDialogTitle>Leave Workshop?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -606,7 +609,7 @@ export default function WorkshopSessionPage() {
             <AlertDialogAction
               onClick={handleLeaveWorkshop}
               disabled={isLeaving}
-              className="bg-orange-600 hover:bg-orange-700 inline-flex items-center gap-2"
+              className="neo-button neo-button--warning inline-flex items-center gap-2"
             >
               {isLeaving && <Spinner size="sm" />}
               {isLeaving ? 'Leaving...' : 'Yes, Leave Workshop'}
@@ -634,7 +637,7 @@ export default function WorkshopSessionPage() {
             <AlertDialogAction
               onClick={handleTerminateWorkshop}
               disabled={isTerminating}
-              className="bg-red-600 hover:bg-red-700 inline-flex items-center gap-2"
+              className="neo-button neo-button--danger inline-flex items-center gap-2"
             >
               {isTerminating && <Spinner size="sm" />}
               {isTerminating ? 'Ending...' : 'Yes, End Workshop'}
@@ -644,20 +647,20 @@ export default function WorkshopSessionPage() {
       </AlertDialog>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto p-4">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Sidebar - Attendees & QR (Host) or Milestones (Attendee) */}
           <div className="lg:col-span-1 space-y-4">
             {isHost ? (
               <>
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="neo-panel p-4">
                   <QRCodeDisplay
                     qrCodeUrl={qrCodeUrl}
                     sessionCode={sessionCode}
                     joinUrl={joinUrl}
                   />
                 </div>
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="neo-panel p-4">
                   <AttendeeList
                     attendees={attendees}
                     milestones={milestones}
@@ -666,7 +669,7 @@ export default function WorkshopSessionPage() {
                 </div>
               </>
             ) : (
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 h-[600px] overflow-y-auto">
+              <div className="neo-panel p-4 h-[600px] overflow-y-auto">
                 <MilestoneList
                   milestones={milestones}
                   completions={completions}
@@ -680,8 +683,8 @@ export default function WorkshopSessionPage() {
 
           {/* Middle - Chat */}
           <div className="lg:col-span-1 space-y-4">
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 h-[600px] flex flex-col">
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="neo-panel h-[600px] flex flex-col">
+              <div className="p-4 border-b border-[color:var(--surface-border)]">
                 <h2 className="font-semibold text-lg text-gray-900 dark:text-white">
                   Chat
                 </h2>
@@ -712,7 +715,7 @@ export default function WorkshopSessionPage() {
 
           {/* Right Sidebar - Milestones (Host) or Attendees (Attendee) */}
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 h-[600px] overflow-y-auto">
+            <div className="neo-panel p-4 h-[600px] overflow-y-auto">
               {isHost ? (
                 <MilestoneList
                   milestones={milestones}

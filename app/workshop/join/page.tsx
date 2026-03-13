@@ -115,16 +115,19 @@ function JoinWorkshopContent() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div
+      className="min-h-screen flex items-center justify-center px-6 py-10"
+      style={{ ['--accent' as string]: '#22c55e' }}
+    >
       <div className="max-w-md w-full space-y-6">
-        <div className="text-center">
-          <Link href="/" className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 text-sm">
-            ← Back to Home
+        <div className="text-center space-y-3">
+          <Link href="/" className="neo-link text-sm">
+            &lt;- Back to Home
           </Link>
-          <h1 className="text-3xl font-bold mt-4 text-gray-900 dark:text-white">Join Workshop</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Enter your session code to participate
-          </p>
+          <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">
+            Join Workshop
+          </h1>
+          <p className="neo-muted">Enter your session code to participate.</p>
         </div>
 
         {/* Wallet Connection */}
@@ -133,10 +136,10 @@ function JoinWorkshopContent() {
         </div>
 
         {isConnected && address && (
-          <form onSubmit={handleSubmit} className="relative space-y-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <form onSubmit={handleSubmit} className="relative space-y-4 neo-panel p-6 overflow-hidden">
             <LoadingBar isLoading={isLoading} />
             <div>
-              <label htmlFor="sessionCode" className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">
+              <label htmlFor="sessionCode" className="block text-sm font-semibold mb-2 text-gray-900 dark:text-gray-100">
                 Session Code *
               </label>
               <input
@@ -145,17 +148,17 @@ function JoinWorkshopContent() {
                 required
                 value={formData.sessionCode}
                 onChange={(e) => setFormData({ ...formData, sessionCode: e.target.value.toUpperCase() })}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-2xl font-bold tracking-wider bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                className="neo-input text-center text-2xl font-bold tracking-wider"
                 placeholder="ABC123"
                 maxLength={6}
               />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">
+              <p className="text-xs neo-muted mt-1 text-center">
                 Get this from your workshop host
               </p>
             </div>
 
             <div>
-              <label htmlFor="displayName" className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">
+              <label htmlFor="displayName" className="block text-sm font-semibold mb-2 text-gray-900 dark:text-gray-100">
                 Display Name *
               </label>
               <input
@@ -164,13 +167,13 @@ function JoinWorkshopContent() {
                 required
                 value={formData.displayName}
                 onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                className="neo-input"
                 placeholder="Your name or nickname"
               />
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">
+              <label htmlFor="email" className="block text-sm font-semibold mb-2 text-gray-900 dark:text-gray-100">
                 Email *
               </label>
               <input
@@ -179,25 +182,25 @@ function JoinWorkshopContent() {
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                className="neo-input"
                 placeholder="your.email@example.com"
               />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs neo-muted mt-1">
                 Must be unique for this workshop. Temporary/disposable emails are not allowed.
               </p>
             </div>
 
-            <div className="p-3 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg">
-              <p className="text-sm text-green-700 dark:text-green-300">
+            <div className="p-3 neo-surface">
+              <p className="text-sm text-gray-700 dark:text-gray-200">
                 <strong>Connected Wallet:</strong> {address.slice(0, 6)}...{address.slice(-4)}
               </p>
-              <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+              <p className="text-xs neo-muted mt-1">
                 This wallet will be your unique identifier
               </p>
             </div>
 
             {error && (
-              <div className="p-4 bg-red-50 dark:bg-red-900/30 border-2 border-red-300 dark:border-red-700 rounded-lg space-y-3">
+              <div className="p-4 neo-surface border border-red-200 dark:border-red-800 rounded-2xl space-y-3">
                 <div className="flex items-start gap-2">
                   <span className="text-red-600 dark:text-red-400 text-xl">⚠️</span>
                   <div className="flex-1">
@@ -242,7 +245,7 @@ function JoinWorkshopContent() {
             )}
 
             {successMessage && (
-              <div className="p-3 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-300 text-sm">
+              <div className="p-3 neo-surface text-green-700 dark:text-green-300 text-sm">
                 ✓ {successMessage}
               </div>
             )}
@@ -251,7 +254,7 @@ function JoinWorkshopContent() {
               type="submit"
               isLoading={isLoading}
               loadingText="Joining Workshop..."
-              className="w-full py-3 bg-green-600 hover:bg-green-700"
+              className="w-full py-3"
             >
               Join Workshop
             </LoadingButton>
@@ -259,16 +262,16 @@ function JoinWorkshopContent() {
         )}
 
         {isConnected && (
-          <div className="text-center text-sm text-gray-500 dark:text-gray-400 space-y-2">
+          <div className="text-center text-sm neo-muted space-y-2">
             <p>You can also scan the QR code provided by your host</p>
-            <div className="p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg text-blue-700 dark:text-blue-300 text-xs space-y-1">
+            <div className="p-4 neo-surface text-xs space-y-1">
               <p><strong>🔒 Security Note:</strong></p>
               <p className="text-left">Each workshop enforces unique identifiers:</p>
               <ul className="list-disc list-inside text-left space-y-0.5 ml-2">
                 <li>One wallet address per workshop</li>
                 <li>One email address per workshop</li>
               </ul>
-              <div className="mt-2 pt-2 border-t border-blue-300 dark:border-blue-700">
+              <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
                 <p className="text-left">
                   <strong>Why?</strong> This prevents identity confusion and ensures each participant has a unique, trackable presence in the workshop.
                 </p>
